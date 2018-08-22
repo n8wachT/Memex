@@ -19,12 +19,6 @@ const defaultState = {
         endDate: undefined,
     },
     isLoading: true,
-    deleteConfirmProps: {
-        isShown: false,
-        url: undefined,
-        // Used to keep track of any particular result (use index)
-        deleting: undefined,
-    },
     activeTagIndex: -1,
     tooltip: null,
     showTooltip: true,
@@ -105,24 +99,6 @@ const delTag = (state, { tag, index }) => {
     }
 }
 
-const showDeleteConfirm = (state, { url, index }) => ({
-    ...state,
-    deleteConfirmProps: {
-        ...state.deleteConfirmProps,
-        isShown: true,
-        url,
-        deleting: index,
-    },
-})
-
-const hideDeleteConfirm = state => ({
-    ...state,
-    deleteConfirmProps: {
-        ...defaultState.deleteConfirmProps,
-        deleting: state.deleteConfirmProps.deleting,
-    },
-})
-
 // Updates search result state by either overwriting or appending
 const handleSearchResult = ({ overwrite }) => (state, newSearchResult) => {
     const searchResult = overwrite
@@ -173,19 +149,6 @@ export default createReducer(
         [actions.incSearchCount]: incSearchCount,
         [actions.initSearchCount]: initSearchCount,
         [actions.changeHasBookmark]: changeHasBookmark,
-        [actions.showDeleteConfirm]: showDeleteConfirm,
-        [actions.hideDeleteConfirm]: hideDeleteConfirm,
-        [actions.resetDeleteConfirm]: state => ({
-            ...state,
-            deleteConfirmProps: { ...defaultState.deleteConfirmProps },
-        }),
-        [actions.setResultDeleting]: (state, index) => ({
-            ...state,
-            deleteConfirmProps: {
-                ...state.deleteConfirmProps,
-                deleting: index,
-            },
-        }),
         [actions.nextPage]: state => ({
             ...state,
             currentPage: state.currentPage + 1,

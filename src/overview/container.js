@@ -29,6 +29,7 @@ import localStyles from './components/Overview.css'
 import { actions as listActs, selectors as customLists } from 'src/custom-lists'
 import SidebarIcons from './sidebar-left/components/SidebarIcons'
 import { actions as sidebarLeftActs } from './sidebar-left'
+import { acts as deleteConfActs } from './delete-confirm-modal'
 import * as sidebar from './sidebar-left/selectors'
 import NotificationContainer from '../notifications'
 import BackToSearch from './components/BackToSearch'
@@ -358,7 +359,6 @@ const mapStateToProps = state => ({
     isBadTerm: selectors.isBadTerm(state),
     isInvalidSearch: selectors.isInvalidSearch(state),
     searchResults: selectors.results(state),
-    isDeleteConfShown: selectors.isDeleteConfShown(state),
     needsWaypoint: selectors.needsPagWaypoint(state),
     showFilters: filters.showFilters(state),
     showInitSearchMsg: selectors.showInitSearchMsg(state),
@@ -386,7 +386,6 @@ const mapDispatchToProps = dispatch => ({
             onStartDateChange: actions.setStartDate,
             onEndDateChange: actions.setEndDate,
             onBottomReached: actions.getMoreResults,
-            resetDeleteConfirm: actions.resetDeleteConfirm,
             deleteDocs: actions.deleteDocs,
             resetActiveTagIndex: actions.resetActiveTagIndex,
             onShowFilterChange: filterActs.showFilter,
@@ -412,7 +411,7 @@ const mapDispatchToProps = dispatch => ({
     },
     handleTrashBtnClick: ({ url }, index) => event => {
         event.preventDefault()
-        dispatch(actions.showDeleteConfirm(url, index))
+        dispatch(deleteConfActs.show(url, index))
     },
     handleToggleBm: ({ url }, index) => event => {
         event.preventDefault()

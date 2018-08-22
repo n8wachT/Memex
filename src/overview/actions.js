@@ -17,18 +17,13 @@ export const appendSearchResult = createAction('overview/appendSearchResult')
 export const setQuery = createAction('overview/setQuery')
 export const setStartDate = createAction('overview/setStartDate')
 export const setEndDate = createAction('overview/setEndDate')
-export const hideResultItem = createAction('overview/hideResultItem')
-export const showDeleteConfirm = createAction(
-    'overview/showDeleteConfirm',
-    (url, index) => ({ url, index }),
+export const hideResultItem = createAction(
+    'overview/hideResultItem',
+    url => url,
 )
-export const hideDeleteConfirm = createAction('overview/hideDeleteConfirm')
-export const resetDeleteConfirm = createAction('overview/resetDeleteConfirm')
 export const changeHasBookmark = createAction('overview/changeHasBookmark')
 export const incSearchCount = createAction('overview/incSearchCount')
 export const initSearchCount = createAction('overview/initSearchCount')
-export const setResultDeleting = createAction('overview/setResultDeleting')
-
 export const resetActiveTagIndex = createAction('overview/resetActiveTagIndex')
 export const setActiveTagIndex = createAction('overview/setActiveTagIndex')
 export const addTag = createAction('overview/localAddTag', (tag, index) => ({
@@ -44,7 +39,6 @@ export const setTooltip = createAction('overview/setTooltip')
 export const toggleShowTooltip = createAction('overview/toggleShowTooltip')
 export const setShowTooltip = createAction('overview/setShowTooltip')
 
-const deletePages = remoteFunction('delPages')
 const createBookmarkByUrl = remoteFunction('addBookmark')
 const removeBookmarkByUrl = remoteFunction('delBookmark')
 const requestSearch = remoteFunction('search')
@@ -259,35 +253,6 @@ export const removeTagFromFilter = () => (dispatch, getState) => {
             dispatch(filterActs.delTagFilter(key))
         }
     })
-}
-
-export const deleteDocs = () => async (dispatch, getState) => {
-    const url = selectors.urlToDelete(getState())
-
-    analytics.trackEvent({
-        category: 'Overview',
-        action: 'Delete result',
-    })
-
-    processEvent({
-        type: 'deleteResult',
-    })
-
-    try {
-        dispatch(hideDeleteConfirm())
-
-        // Remove all assoc. docs from the database + index
-        await deletePages([url])
-
-        // Hide the result item + confirm modal directly (optimistically)
-        dispatch(hideResultItem(url))
-    } catch (error) {
-        // Do nothing
-    } finally {
-        dispatch(removeTagFromFilter())
-        dispatch(setResultDeleting(undefined))
-        updateLastActive() // Consider user active (analytics)
-    }
 }
 
 export const toggleBookmark = (url, index) => async (dispatch, getState) => {

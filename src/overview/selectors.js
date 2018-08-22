@@ -1,6 +1,7 @@
 import { createSelector } from 'reselect'
 
 import { selectors as filterSelectors } from '../search-filters'
+import { selectors as deleteConfSelectors } from './delete-confirm-modal'
 import * as constants from './constants'
 
 /**
@@ -75,22 +76,6 @@ export const resultsSkip = createSelector(
     currentPage,
     page => page * constants.PAGE_SIZE,
 )
-export const deleteConfirmProps = createSelector(
-    overview,
-    state => state.deleteConfirmProps,
-)
-export const isDeleteConfShown = createSelector(
-    deleteConfirmProps,
-    state => state.isShown,
-)
-export const urlToDelete = createSelector(
-    deleteConfirmProps,
-    state => state.url,
-)
-export const deletingResultIndex = createSelector(
-    deleteConfirmProps,
-    state => state.deleting,
-)
 
 export const activeTagIndex = createSelector(
     overview,
@@ -99,8 +84,8 @@ export const activeTagIndex = createSelector(
 
 export const results = createSelector(
     resultDocs,
-    isDeleteConfShown,
-    deletingResultIndex,
+    deleteConfSelectors.isShown,
+    deleteConfSelectors.indexToDelete,
     activeTagIndex,
     (docs, modalShown, deleting, tagIndex) =>
         docs.map((pageDoc, i) => ({
