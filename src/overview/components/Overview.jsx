@@ -14,7 +14,7 @@ const Overview = props => (
         <Header {...props} />
 
         {props.sidebarIcons}
-        <SideBar disableOnClickOutside={props.disbleOutsideClick} />
+        <SideBar />
 
         <div className={styles.main}>{props.children}</div>
         <DeleteConfirmModal />
@@ -26,7 +26,6 @@ Overview.propTypes = {
     children: PropTypes.node.isRequired,
     renderDragElement: PropTypes.node.isRequired,
     sidebarIcons: PropTypes.node,
-    disbleOutsideClick: PropTypes.bool.isRequired,
 }
 
 export default Overview

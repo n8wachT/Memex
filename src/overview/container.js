@@ -26,7 +26,7 @@ import Sidebar, {
 import { selectors as filters, actions as filterActs } from '../search-filters'
 import NoResultBadTerm from './components/NoResultBadTerm'
 import localStyles from './components/Overview.css'
-import { actions as listActs, selectors as customLists } from 'src/custom-lists'
+import { actions as listActs } from '../custom-lists'
 import SidebarIcons from './sidebar-left/components/SidebarIcons'
 import { actions as sidebarLeftActs } from './sidebar-left'
 import { acts as deleteConfActs } from './delete-confirm-modal'
@@ -63,7 +63,6 @@ class OverviewContainer extends Component {
         init: PropTypes.func.isRequired,
         isListFilterActive: PropTypes.bool.isRequired,
         handleCrossRibbonClick: PropTypes.func.isRequired,
-        urlDragged: PropTypes.string.isRequired,
         setUrlDragged: PropTypes.func.isRequired,
         mouseOverSidebar: PropTypes.bool.isRequired,
         filterActive: PropTypes.bool.isRequired,
@@ -338,7 +337,6 @@ class OverviewContainer extends Component {
                     isSearchDisabled={this.props.showOnboarding}
                     scrollDisabled={this.props.mouseOnSidebar}
                     renderDragElement={this.renderDragElement()}
-                    disbleOutsideClick={Boolean(this.props.urlDragged)}
                     sidebarIcons={this.renderSidebarIcons()}
                 >
                     {this.renderResults()}
@@ -371,7 +369,6 @@ const mapStateToProps = state => ({
     isTooltipRenderable: selectors.isTooltipRenderable(state),
     mouseOnSidebar: sidebarSels.mouseOnSidebar(state),
     isListFilterActive: filters.listFilterActive(state),
-    urlDragged: customLists.urlDragged(state),
     mouseOverSidebar: sidebar.mouseOverSidebar(state),
     isSidebarOpen: sidebar.isSidebarOpen(state),
     filterActive: filters.showClearFiltersBtn(state),
