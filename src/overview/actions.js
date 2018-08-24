@@ -5,25 +5,19 @@ import { remoteFunction } from 'src/util/webextensionRPC'
 import { actions as filterActs, selectors as filters } from '../search-filters'
 import * as constants from './constants'
 import * as selectors from './selectors'
-import * as notifActions from '../notifications/actions'
 import { fetchTooltip } from './components/tooltips'
-import { actions as sidebarActs } from './sidebar-left'
+import { acts as searchBarActs, selectors as searchBar } from './search-bar'
 
-export const setLoading = createAction('overview/setLoading')
+export const setLoading = createAction('overview/setLoading', a => a)
 export const nextPage = createAction('overview/nextPage')
 export const resetPage = createAction('overview/resetPage')
 export const setSearchResult = createAction('overview/setSearchResult')
 export const appendSearchResult = createAction('overview/appendSearchResult')
-export const setQuery = createAction('overview/setQuery')
-export const setStartDate = createAction('overview/setStartDate')
-export const setEndDate = createAction('overview/setEndDate')
 export const hideResultItem = createAction(
     'overview/hideResultItem',
     url => url,
 )
 export const changeHasBookmark = createAction('overview/changeHasBookmark')
-export const incSearchCount = createAction('overview/incSearchCount')
-export const initSearchCount = createAction('overview/initSearchCount')
 export const resetActiveTagIndex = createAction('overview/resetActiveTagIndex')
 export const setActiveTagIndex = createAction('overview/setActiveTagIndex')
 export const addTag = createAction('overview/localAddTag', (tag, index) => ({
@@ -35,31 +29,16 @@ export const delTag = createAction('overview/localDelTag', (tag, index) => ({
     index,
 }))
 
-export const setTooltip = createAction('overview/setTooltip')
+export const setTooltip = createAction('overview/setTooltip', a => a)
 export const toggleShowTooltip = createAction('overview/toggleShowTooltip')
 export const setShowTooltip = createAction('overview/setShowTooltip')
 
 const createBookmarkByUrl = remoteFunction('addBookmark')
 const removeBookmarkByUrl = remoteFunction('delBookmark')
-const requestSearch = remoteFunction('search')
 const processEvent = remoteFunction('processEvent')
 
-/**
- * Init a connection to the index running in the background script, allowing
- * redux actions to be dispatched whenever a command is received from the background script.
- * Also perform an initial search to populate the view (empty query = get all docs)
- */
-export const init = () => (dispatch, getState) => {
-    dispatch(notifActions.updateUnreadNotif())
-
-    // Only do init search if empty query; if query set, the epic will trigger a search
-    if (selectors.isEmptyQuery(getState())) {
-        dispatch(search({ overwrite: true }))
-    }
-}
-
 // Egg
-const easter = () => dispatch =>
+export const easter = () => dispatch =>
     dispatch(
         updateSearchResult({
             overwrite: true,
@@ -80,77 +59,11 @@ const easter = () => dispatch =>
         }),
     )
 
-/**
- * Perform a search using the current query params as defined in state. Pagination
- * state will also be used to perform relevant pagination logic.
- *
- * @param {boolean} [overwrite=false] Denotes whether to overwrite existing results or just append.
- */
-export const search = ({ overwrite } = { overwrite: false }) => async (
-    dispatch,
-    getState,
-) => {
-    const firstState = getState()
-    const currentQueryParams = selectors.currentQueryParams(firstState)
-    const showTooltip = selectors.showTooltip(firstState)
-    if (filters.showClearFiltersBtn(getState())) {
-        dispatch(sidebarActs.openSidebarFilterMode())
-    }
-
-    if (currentQueryParams.query.includes('#')) {
-        return
-    }
-
-    dispatch(setLoading(true))
-
-    if (showTooltip) {
-        dispatch(fetchNextTooltip())
-    }
-
-    // Overwrite of results should always reset the current page before searching
-    if (overwrite) {
-        dispatch(resetPage())
-    }
-
-    if (/thank you/i.test(currentQueryParams.query)) {
-        return dispatch(easter())
-    }
-
-    // Grab needed derived state for search
-
-    const state = getState()
-    const searchParams = {
-        ...currentQueryParams,
-        showOnlyBookmarks: filters.onlyBookmarks(state),
-        tags: filters.tags(state),
-        domains: filters.domainsInc(state),
-        domainsExclude: filters.domainsExc(state),
-        limit: constants.PAGE_SIZE,
-        skip: selectors.resultsSkip(state),
-        // lists for now is just id of one list
-        lists: [filters.listFilter(state)],
-    }
-
-    try {
-        // Tell background script to search
-        const searchResult = await requestSearch(searchParams)
-        dispatch(updateSearchResult({ overwrite, searchResult }))
-
-        if (searchResult.docs.length) {
-            dispatch(incSearchCount())
-        }
-    } catch (error) {
-        dispatch(handleErrors({ error, query: currentQueryParams.query }))
-    }
-
-    updateLastActive() // Consider user active (analytics)
-}
-
 // Analytics use
 function trackSearch(searchResult, overwrite, state) {
     // Value should be set as # results (if non-default search)
     const value =
-        overwrite && !selectors.isEmptyQuery(state)
+        overwrite && !searchBar.isEmptyQuery(state)
             ? searchResult.totalCount
             : undefined
 
@@ -199,7 +112,7 @@ function storeSearch(searchResult, overwrite, state) {
     }
 }
 
-const updateSearchResult = ({ searchResult, overwrite = false }) => (
+export const updateSearchResult = ({ searchResult, overwrite = false }) => (
     dispatch,
     getState,
 ) => {
@@ -212,18 +125,12 @@ const updateSearchResult = ({ searchResult, overwrite = false }) => (
     dispatch(setLoading(false))
 }
 
-// TODO stateful error handling
-const handleErrors = ({ query, error }) => dispatch => {
-    console.error(`Search for '${query}' errored: ${error.toString()}`)
-    dispatch(setLoading(false))
-}
-
 /**
  * Increments the page state before scheduling another search.
  */
 export const getMoreResults = () => dispatch => {
     dispatch(nextPage())
-    dispatch(search())
+    dispatch(searchBarActs.search())
 }
 
 // Remove tags with no associated paged from filters
@@ -292,61 +199,6 @@ export const showTags = index => (dispatch, getState) => {
     } else {
         dispatch(setActiveTagIndex(index))
     }
-}
-
-const stripTagPattern = tag =>
-    tag
-        .slice(1)
-        .split('+')
-        .join(' ')
-
-export const setQueryTagsDomains = (input, isEnter = true) => (
-    dispatch,
-    getState,
-) => {
-    const removeFromInputVal = term =>
-        (input = input.replace(isEnter ? term : `${term} `, ''))
-
-    if (input[input.length - 1] === ' ' || isEnter) {
-        // Split input into terms and try to extract any tag/domain patterns to add to filters
-        const terms = input.toLowerCase().match(/\S+/g) || []
-
-        terms.forEach(term => {
-            // If '#tag' pattern in input, remove it and add to filter state
-            if (constants.HASH_TAG_PATTERN.test(term)) {
-                removeFromInputVal(term)
-                dispatch(filterActs.toggleTagFilter(stripTagPattern(term)))
-                analytics.trackEvent({
-                    category: 'Tag',
-                    action: 'Filter by Tag',
-                })
-            }
-
-            // If 'domain.tld.cctld?' pattern in input, remove it and add to filter state
-            if (constants.DOMAIN_TLD_PATTERN.test(term)) {
-                removeFromInputVal(term)
-
-                // Choose to exclude or include domain, basead on pattern
-                const act = constants.EXCLUDE_PATTERN.test(term)
-                    ? filterActs.toggleExcDomainFilter
-                    : filterActs.toggleIncDomainFilter
-
-                term = term.replace(constants.TERM_CLEAN_PATTERN, '')
-                dispatch(act(term))
-
-                analytics.trackEvent({
-                    category: 'Domain',
-                    action: 'Filter by Domain',
-                })
-            }
-        })
-    }
-
-    if (input.length > 0) {
-        processEvent({ type: 'nlpSearch' })
-    }
-
-    dispatch(setQuery(input))
 }
 
 export const fetchNextTooltip = () => async dispatch => {

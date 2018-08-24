@@ -5,44 +5,16 @@ import { createReducer } from 'redux-act'
 import * as actions from './actions'
 
 const defaultState = {
-    searchCount: 0,
     currentPage: 0, // Pagination state
     searchResult: {
         docs: [], // The current search result list
         resultsExhausted: false,
         totalCount: null,
     },
-    // The current search input values
-    currentQueryParams: {
-        query: '',
-        startDate: undefined,
-        endDate: undefined,
-    },
     isLoading: true,
     activeTagIndex: -1,
     tooltip: null,
     showTooltip: true,
-}
-
-function setQuery(state, query) {
-    return {
-        ...state,
-        currentQueryParams: { ...state.currentQueryParams, query },
-    }
-}
-
-function setStartDate(state, date) {
-    return {
-        ...state,
-        currentQueryParams: { ...state.currentQueryParams, startDate: date },
-    }
-}
-
-function setEndDate(state, date) {
-    return {
-        ...state,
-        currentQueryParams: { ...state.currentQueryParams, endDate: date },
-    }
 }
 
 function hideResultItem(state, url) {
@@ -129,12 +101,6 @@ const changeHasBookmark = (state, index) => {
     return { ...state, searchResult }
 }
 
-const incSearchCount = state => ({
-    ...state,
-    searchCount: state.searchCount + 1,
-})
-const initSearchCount = (state, searchCount) => ({ ...state, searchCount })
-
 const payloadReducer = key => (state, payload) => ({ ...state, [key]: payload })
 
 export default createReducer(
@@ -142,12 +108,7 @@ export default createReducer(
         [actions.appendSearchResult]: handleSearchResult({ overwrite: false }),
         [actions.setSearchResult]: handleSearchResult({ overwrite: true }),
         [actions.setLoading]: (state, isLoading) => ({ ...state, isLoading }),
-        [actions.setQuery]: setQuery,
-        [actions.setStartDate]: setStartDate,
-        [actions.setEndDate]: setEndDate,
         [actions.hideResultItem]: hideResultItem,
-        [actions.incSearchCount]: incSearchCount,
-        [actions.initSearchCount]: initSearchCount,
         [actions.changeHasBookmark]: changeHasBookmark,
         [actions.nextPage]: state => ({
             ...state,

@@ -11,6 +11,7 @@ import * as overviewPage from '../overview'
 import { reducer as onboarding } from '../overview/onboarding'
 import { reducer as sidebar } from '../overview/sidebar'
 import { reducer as deleteConfModal } from '../overview/delete-confirm-modal'
+import { reducer as searchBar } from '../overview/search-bar'
 import { reducer as customLists } from 'src/custom-lists'
 // Search filters in the sidebar
 import { reducer as searchFilters } from 'src/search-filters'
@@ -30,6 +31,7 @@ const rootReducer = combineReducers({
     sidebarLeft,
     notifications: notifications.reducer,
     deleteConfModal,
+    searchBar,
 })
 
 const rootEpic = combineEpics(...Object.values(overviewPage.epics))

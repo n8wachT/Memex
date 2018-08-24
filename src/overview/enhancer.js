@@ -13,6 +13,7 @@ import {
     constants as onboardingConsts,
 } from './onboarding'
 import { selectors as filters, actions as filterActs } from '../search-filters'
+import { selectors as searchBar, acts as searchBarActs } from './search-bar'
 
 const parseBool = str => str === 'true'
 const parseNumber = str => Number(str)
@@ -25,13 +26,13 @@ const locationSync = ReduxQuerySync.enhancer({
     history,
     params: {
         startDate: {
-            selector: selectors.startDate,
-            action: actions.setStartDate,
+            selector: searchBar.startDate,
+            action: searchBarActs.setStartDate,
             stringToValue: parseNumber,
         },
         endDate: {
-            selector: selectors.endDate,
-            action: actions.setEndDate,
+            selector: searchBar.endDate,
+            action: searchBarActs.setEndDate,
             stringToValue: parseNumber,
         },
         showOnlyBookmarks: {
@@ -70,8 +71,8 @@ const locationSync = ReduxQuerySync.enhancer({
             defaultValue: false,
         },
         query: {
-            selector: selectors.query,
-            action: actions.setQueryTagsDomains,
+            selector: searchBar.query,
+            action: searchBarActs.setQueryTagsDomains,
             defaultValue: '',
         },
         showInbox: {
@@ -92,7 +93,7 @@ const hydrateStateFromStorage = store => {
         })
 
     // Keep each of these storage keys in sync
-    hydrate(constants.SEARCH_COUNT_KEY, actions.initSearchCount)
+    hydrate(constants.SEARCH_COUNT_KEY, searchBarActs.initSearchCount)
     hydrate(
         onboardingConsts.STORAGE_KEYS.isImportsDone,
         onboardingActs.setImportsDone,
@@ -108,7 +109,7 @@ const syncStateToStorage = store =>
 
         const state = store.getState()
 
-        dump(constants.SEARCH_COUNT_KEY, selectors.searchCount(state))
+        dump(constants.SEARCH_COUNT_KEY, searchBar.searchCount(state))
         dump(
             onboardingConsts.STORAGE_KEYS.isImportsDone,
             onboarding.isImportsDone(state),

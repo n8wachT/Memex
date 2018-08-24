@@ -15,7 +15,10 @@ export const toggleFilterTypes = createAction(
 
 export const addTagFilter = createAction('search-filters/addTagFilter')
 export const delTagFilter = createAction('search-filters/delTagFilter')
-export const toggleTagFilter = createAction('search-filters/toggleTagFilter')
+export const toggleTagFilter = createAction(
+    'search-filters/toggleTagFilter',
+    a => a,
+)
 export const addIncDomainFilter = createAction(
     'search-filters/addIncDomainFilter',
 )
@@ -30,9 +33,11 @@ export const delExcDomainFilter = createAction(
 )
 export const toggleIncDomainFilter = createAction(
     'search-filters/toggleIncDomainFilter',
+    a => a,
 )
 export const toggleExcDomainFilter = createAction(
     'search-filters/toggleExcDomainFilter',
+    a => a,
 )
 export const setTagFilters = createAction('search-filters/setTagFilters')
 export const setListFilters = createAction('searc-filters/setListFilters')

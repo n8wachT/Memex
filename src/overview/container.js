@@ -11,9 +11,8 @@ import { IndexDropdown, MigrationNotice } from 'src/common-ui/containers'
 import * as actions from './actions'
 import * as selectors from './selectors'
 import * as constants from './constants'
-import * as notifActions from '../notifications/actions'
-import * as notifSelectors from '../notifications/selectors'
 import ResultList from './components/ResultList'
+import NotificationContainer, { selectors as notifs } from '../notifications'
 import Overview from './components/Overview'
 import PageResultItem from './components/PageResultItem'
 import ResultsMessage from './components/ResultsMessage'
@@ -24,6 +23,7 @@ import Sidebar, {
     actions as sidebarActs,
 } from './sidebar'
 import { selectors as filters, actions as filterActs } from '../search-filters'
+import { acts as searchBarActs } from './search-bar'
 import NoResultBadTerm from './components/NoResultBadTerm'
 import localStyles from './components/Overview.css'
 import { actions as listActs } from '../custom-lists'
@@ -31,13 +31,10 @@ import SidebarIcons from './sidebar-left/components/SidebarIcons'
 import { actions as sidebarLeftActs } from './sidebar-left'
 import { acts as deleteConfActs } from './delete-confirm-modal'
 import * as sidebar from './sidebar-left/selectors'
-import NotificationContainer from '../notifications'
 import BackToSearch from './components/BackToSearch'
 
 class OverviewContainer extends Component {
     static propTypes = {
-        handleInputChange: PropTypes.func.isRequired,
-        handleInputClick: PropTypes.func.isRequired,
         onBottomReached: PropTypes.func.isRequired,
         isMigrationRequired: PropTypes.bool.isRequired,
         isLoading: PropTypes.bool.isRequired,
@@ -101,13 +98,7 @@ class OverviewContainer extends Component {
     setTagButtonRef = el => this.tagBtnRefs.push(el)
     trackDropwdownRef = el => this.dropdownRefs.push(el)
 
-    handleSearchEnter = event => {
-        if (event.key === 'Enter') {
-            this.props.handleInputClick(event)
-        }
-    }
-
-    renderSidebarIcons = () => {
+    renderSidebarIcons() {
         return !this.props.showInbox ? (
             <SidebarIcons
                 filterBtnClick={this.props.showSearchFilters}
@@ -313,7 +304,7 @@ class OverviewContainer extends Component {
         }
     }
 
-    renderDragElement = () => {
+    renderDragElement() {
         return (
             <div
                 id="dragged-element"
@@ -330,13 +321,8 @@ class OverviewContainer extends Component {
         return (
             <Wrapper>
                 <Overview
-                    {...this.props}
                     setInputRef={this.setInputRef}
-                    onInputChange={this.props.handleInputChange}
-                    onQuerySearchKeyDown={this.handleSearchEnter}
-                    isSearchDisabled={this.props.showOnboarding}
-                    scrollDisabled={this.props.mouseOnSidebar}
-                    renderDragElement={this.renderDragElement()}
+                    dragElement={this.renderDragElement()}
                     sidebarIcons={this.renderSidebarIcons()}
                 >
                     {this.renderResults()}
@@ -351,7 +337,6 @@ class OverviewContainer extends Component {
 const mapStateToProps = state => ({
     isLoading: selectors.isLoading(state),
     isNewSearchLoading: selectors.isNewSearchLoading(state),
-    currentQueryParams: selectors.currentQueryParams(state),
     isMigrationRequired: selectors.isMigrationRequired(state),
     noResults: selectors.noResults(state),
     isBadTerm: selectors.isBadTerm(state),
@@ -372,40 +357,27 @@ const mapStateToProps = state => ({
     mouseOverSidebar: sidebar.mouseOverSidebar(state),
     isSidebarOpen: sidebar.isSidebarOpen(state),
     filterActive: filters.showClearFiltersBtn(state),
-    showInbox: notifSelectors.showInbox(state),
-    unreadNotifCount: notifSelectors.unreadNotifCount(state),
-    showUnreadCount: notifSelectors.showUnreadCount(state),
+    showInbox: notifs.showInbox(state),
 })
 
 const mapDispatchToProps = dispatch => ({
     ...bindActionCreators(
         {
-            onStartDateChange: actions.setStartDate,
-            onEndDateChange: actions.setEndDate,
             onBottomReached: actions.getMoreResults,
             deleteDocs: actions.deleteDocs,
             resetActiveTagIndex: actions.resetActiveTagIndex,
             onShowFilterChange: filterActs.showFilter,
             fetchNextTooltip: actions.fetchNextTooltip,
-            toggleInbox: notifActions.toggleInboxMid,
-            init: actions.init,
             setUrlDragged: listActs.setUrlDragged,
             showSearchFilters: sidebarLeftActs.openSidebarFilterMode,
             hideSearchFilters: sidebarLeftActs.openSidebarListMode,
             resetUrlDragged: listActs.resetUrlDragged,
             resetFilters: filterActs.resetFilters,
             delListFilter: filterActs.delListFilter,
+            init: searchBarActs.init,
         },
         dispatch,
     ),
-    handleInputChange: event => {
-        const input = event.target
-        dispatch(actions.setQueryTagsDomains(input.value, false))
-    },
-    handleInputClick: event => {
-        const input = event.target
-        dispatch(actions.setQueryTagsDomains(input.value, true))
-    },
     handleTrashBtnClick: ({ url }, index) => event => {
         event.preventDefault()
         dispatch(deleteConfActs.show(url, index))

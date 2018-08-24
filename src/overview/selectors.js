@@ -1,7 +1,10 @@
 import { createSelector } from 'reselect'
 
-import { selectors as filterSelectors } from '../search-filters'
 import { selectors as deleteConfSelectors } from './delete-confirm-modal'
+import {
+    selectors as searchBar,
+    constants as searchBarConsts,
+} from './search-bar'
 import * as constants from './constants'
 
 /**
@@ -21,26 +24,11 @@ export const overview = state => state.overview
 const searchResult = createSelector(overview, state => state.searchResult)
 const resultDocs = createSelector(searchResult, results => results.docs)
 
-export const searchCount = createSelector(overview, state => state.searchCount)
-
-export const currentQueryParams = createSelector(
-    overview,
-    state => state.currentQueryParams,
-)
-
-export const query = createSelector(currentQueryParams, params => params.query)
-export const startDate = createSelector(
-    currentQueryParams,
-    params => params.startDate,
-)
-export const endDate = createSelector(
-    currentQueryParams,
-    params => params.endDate,
-)
-
 export const queryParamsDisplay = createSelector(
-    currentQueryParams,
-    ({ startDate, endDate, query }) => {
+    searchBar.query,
+    searchBar.startDate,
+    searchBar.endDate,
+    (query, startDate, endDate) => {
         let val = ''
 
         if (query && query.length) {
@@ -74,7 +62,7 @@ export const currentPageDisplay = createSelector(
 
 export const resultsSkip = createSelector(
     currentPage,
-    page => page * constants.PAGE_SIZE,
+    page => page * searchBarConsts.PAGE_SIZE,
 )
 
 export const activeTagIndex = createSelector(
@@ -98,7 +86,7 @@ export const results = createSelector(
 )
 
 export const showInitSearchMsg = createSelector(
-    searchCount,
+    searchBar.searchCount,
     resultDocs,
     isLoading,
     (searchCount, results, isLoading) =>
@@ -146,25 +134,6 @@ export const isNewSearchLoading = createSelector(
     isLoading,
     currentPage,
     (isLoading, currentPage) => isLoading && currentPage === 0,
-)
-
-export const isEmptyQuery = createSelector(
-    currentQueryParams,
-    filterSelectors.onlyBookmarks,
-    filterSelectors.tags,
-    filterSelectors.displayDomains,
-    (
-        { query, startDate, endDate },
-        showOnlyBookmarks,
-        filterTags,
-        filterDomains,
-    ) =>
-        !query.length &&
-        !startDate &&
-        !endDate &&
-        !showOnlyBookmarks &&
-        !filterTags.length &&
-        !filterDomains.length,
 )
 
 export const tooltip = state => overview(state).tooltip
