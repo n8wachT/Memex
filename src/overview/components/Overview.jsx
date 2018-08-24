@@ -5,15 +5,18 @@ import { Wrapper } from 'src/common-ui/components'
 import { DeleteConfirmModal } from '../delete-confirm-modal'
 import styles from './Overview.css'
 import Head from 'src/options/containers/Head'
-import SideBar from '../sidebar-left/container'
+import {
+    SidebarContainer as Sidebar,
+    SidebarIconsContainer as SidebarIcons,
+} from '../sidebar-left'
 import { Header } from '../search-bar'
 
 const Overview = props => (
     <Wrapper>
         <Head />
         <Header setInputRef={props.setInputRef} />
-        {props.sidebarIcons}
-        <SideBar />
+        <SidebarIcons />
+        <Sidebar />
         <div className={styles.main}>{props.children}</div>
         <DeleteConfirmModal />
         {props.dragElement}
@@ -23,7 +26,6 @@ const Overview = props => (
 Overview.propTypes = {
     children: PropTypes.node.isRequired,
     dragElement: PropTypes.node.isRequired,
-    sidebarIcons: PropTypes.node,
     setInputRef: PropTypes.func.isRequired,
 }
 

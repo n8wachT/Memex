@@ -4,19 +4,17 @@ import PropTypes from 'prop-types'
 import { bindActionCreators } from 'redux'
 import onClickOutside from 'react-onclickoutside'
 
-import { ListSideBar } from 'src/custom-lists/components'
-// import SearchFilters from 'src/search-filters/container'
-import { selectors, actions } from './'
+import { selectors, actions } from '..'
 import SearchFilters, {
     actions as filterActs,
     selectors as filters,
-} from '../../search-filters'
+} from '../../../search-filters'
+import { selectors as customLists } from '../../../custom-lists'
+import { ListSideBar } from '../../../custom-lists/components'
 
-// TODO: compress into one
-import Sidebar from './components/SideBar'
-import ClearFilter from './components/ClearFilter'
-import ButtonContainer from './components/ButtonContainer'
-import { selectors as customLists } from '../../custom-lists'
+import Sidebar from './SideBar'
+import ClearFilter from './ClearFilter'
+import ButtonContainer from './ButtonContainer'
 
 class SidebarContainer extends PureComponent {
     static propTypes = {

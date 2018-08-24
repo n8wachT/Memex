@@ -27,11 +27,9 @@ import { acts as searchBarActs } from './search-bar'
 import NoResultBadTerm from './components/NoResultBadTerm'
 import localStyles from './components/Overview.css'
 import { actions as listActs } from '../custom-lists'
-import SidebarIcons from './sidebar-left/components/SidebarIcons'
-import { actions as sidebarLeftActs } from './sidebar-left'
 import { acts as deleteConfActs } from './delete-confirm-modal'
+import { actions as sidebarLeftActs } from './sidebar-left'
 import * as sidebar from './sidebar-left/selectors'
-import BackToSearch from './components/BackToSearch'
 
 class OverviewContainer extends Component {
     static propTypes = {
@@ -62,11 +60,7 @@ class OverviewContainer extends Component {
         handleCrossRibbonClick: PropTypes.func.isRequired,
         setUrlDragged: PropTypes.func.isRequired,
         mouseOverSidebar: PropTypes.bool.isRequired,
-        filterActive: PropTypes.bool.isRequired,
-        showSearchFilters: PropTypes.func.isRequired,
         hideSearchFilters: PropTypes.func.isRequired,
-        resetFilters: PropTypes.func.isRequired,
-        delListFilter: PropTypes.func.isRequired,
         resetUrlDragged: PropTypes.func.isRequired,
         isSidebarOpen: PropTypes.bool.isRequired,
         showInbox: PropTypes.bool.isRequired,
@@ -97,23 +91,6 @@ class OverviewContainer extends Component {
     setTagDivRef = el => (this.tagDiv = el)
     setTagButtonRef = el => this.tagBtnRefs.push(el)
     trackDropwdownRef = el => this.dropdownRefs.push(el)
-
-    renderSidebarIcons() {
-        return !this.props.showInbox ? (
-            <SidebarIcons
-                filterBtnClick={this.props.showSearchFilters}
-                listBtnClick={this.props.hideSearchFilters}
-                overviewMode
-                onPageDrag={this.props.hideSearchFilters}
-                filterActive={this.props.filterActive}
-                isListFilterActive={this.props.isListFilterActive}
-                onClearBtnClick={this.props.resetFilters}
-                onShowBtnClick={this.props.delListFilter}
-            />
-        ) : (
-            <BackToSearch />
-        )
-    }
 
     renderTagsManager = ({ shouldDisplayTagPopup, url, tags }, index) =>
         shouldDisplayTagPopup ? (
@@ -323,7 +300,6 @@ class OverviewContainer extends Component {
                 <Overview
                     setInputRef={this.setInputRef}
                     dragElement={this.renderDragElement()}
-                    sidebarIcons={this.renderSidebarIcons()}
                 >
                     {this.renderResults()}
                 </Overview>
@@ -356,24 +332,20 @@ const mapStateToProps = state => ({
     isListFilterActive: filters.listFilterActive(state),
     mouseOverSidebar: sidebar.mouseOverSidebar(state),
     isSidebarOpen: sidebar.isSidebarOpen(state),
-    filterActive: filters.showClearFiltersBtn(state),
     showInbox: notifs.showInbox(state),
 })
 
 const mapDispatchToProps = dispatch => ({
     ...bindActionCreators(
         {
+            hideSearchFilters: sidebarLeftActs.openSidebarListMode,
             onBottomReached: actions.getMoreResults,
             deleteDocs: actions.deleteDocs,
             resetActiveTagIndex: actions.resetActiveTagIndex,
             onShowFilterChange: filterActs.showFilter,
             fetchNextTooltip: actions.fetchNextTooltip,
             setUrlDragged: listActs.setUrlDragged,
-            showSearchFilters: sidebarLeftActs.openSidebarFilterMode,
-            hideSearchFilters: sidebarLeftActs.openSidebarListMode,
             resetUrlDragged: listActs.resetUrlDragged,
-            resetFilters: filterActs.resetFilters,
-            delListFilter: filterActs.delListFilter,
             init: searchBarActs.init,
         },
         dispatch,
