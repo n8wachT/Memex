@@ -1,5 +1,5 @@
 import transformPageText from 'src/util/transform-page-text'
-import { constants } from '../overview/search-bar'
+import * as constants from '../overview/search-bar/constants'
 import { DEFAULT_TERM_SEPARATOR } from './util'
 
 /**

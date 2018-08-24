@@ -1,48 +1,56 @@
-import React, { PureComponent } from 'react'
-import PropTypes from 'prop-types'
+import React, {
+    PureComponent,
+    ReactNode,
+    MouseEventHandler,
+    DragEventHandler,
+} from 'react'
 import classNames from 'classnames'
 
-import { LoadingIndicator } from 'src/common-ui/components'
-import niceTime from 'src/util/nice-time'
-import styles from './PageResultItem.css'
+import { LoadingIndicator } from '../../common-ui/components'
+import niceTime from '../../util/nice-time'
 import SemiCircularRibbon from './SemiCircularRibbon'
 
-const nullImg = '/img/null-icon.png'
+const styles = require('./PageResultItem.css')
 
-const getBookmarkClass = ({ hasBookmark }) =>
-    classNames(styles.button, {
-        [styles.bookmark]: hasBookmark,
-        [styles.notBookmark]: !hasBookmark,
-    })
+export interface Props {
+    nullImg?: string
 
-class PageResultItem extends PureComponent {
-    static propTypes = {
-        favIcon: PropTypes.string,
-        screenshot: PropTypes.string,
-        displayTime: PropTypes.number.isRequired,
-        url: PropTypes.string.isRequired,
-        title: PropTypes.string.isRequired,
-        hasBookmark: PropTypes.bool.isRequired, // eslint-disable-line
-        isDeleting: PropTypes.bool.isRequired,
-        onTrashBtnClick: PropTypes.func.isRequired,
-        onToggleBookmarkClick: PropTypes.func.isRequired,
-        tagPills: PropTypes.array.isRequired,
-        tagManager: PropTypes.node,
-        onTagBtnClick: PropTypes.func.isRequired,
-        setTagButtonRef: PropTypes.func.isRequired,
-        isListFilterActive: PropTypes.bool.isRequired,
-        handleCrossRibbonClick: PropTypes.func.isRequired,
-        setUrlDragged: PropTypes.func.isRequired,
-        hideSearchFilters: PropTypes.func.isRequired,
-        resetUrlDragged: PropTypes.func.isRequired,
-        onCommentBtnClick: PropTypes.func.isRequired,
-        isSidebarOpen: PropTypes.bool.isRequired,
+    favIcon: string
+    screenshot: string
+    displayTime: number
+    url: string
+    title: string
+    hasBookmark: boolean
+    isDeleting: boolean
+    isListFilterActive: boolean
+    isSidebarOpen: boolean
+    tagPills: ReactNode[]
+    tagManager: ReactNode
+    setTagButtonRef: () => void
+    hideSearchFilters: () => void
+    resetUrlDragged: () => void
+    setUrlDragged: (url: string) => void
+    onCommentBtnClick: MouseEventHandler
+    onTrashBtnClick: MouseEventHandler
+    handleCrossRibbonClick: MouseEventHandler
+    onToggleBookmarkClick: MouseEventHandler
+    onTagBtnClick: MouseEventHandler
+}
+
+class PageResultItem extends PureComponent<Props> {
+    static defaultProps = {
+        nullImg: '/img/null-icon.png',
     }
 
-    dragStart = e => {
+    get bookmarkClass() {
+        return classNames(styles.button, {
+            [styles.bookmark]: this.props.hasBookmark,
+            [styles.notBookmark]: !this.props.hasBookmark,
+        })
+    }
+
+    dragStart: DragEventHandler = e => {
         const { url, setUrlDragged } = this.props
-        // console.log(e.type);
-        // console.log('drag  triggered');
 
         setUrlDragged(url)
         const crt = document.getElementById('dragged-element')
@@ -51,7 +59,9 @@ class PageResultItem extends PureComponent {
         e.dataTransfer.setData('text/plain', url)
 
         e.dataTransfer.setDragImage(crt, 10, 10)
-        if (this.props.isSidebarOpen) this.props.hideSearchFilters()
+        if (this.props.isSidebarOpen) {
+            this.props.hideSearchFilters()
+        }
     }
 
     render() {
@@ -66,19 +76,19 @@ class PageResultItem extends PureComponent {
                 )}
                 <div className={styles.rootContainer}>
                     <a
-                        draggable="true"
                         onDragStart={this.dragStart}
                         onDragEnd={this.props.resetUrlDragged}
                         className={styles.root}
                         href={this.props.url}
                         target="_blank"
+                        draggable
                     >
                         <div className={styles.screenshotContainer}>
                             <img
                                 className={styles.screenshot}
                                 src={
                                     this.props.screenshot == null
-                                        ? nullImg
+                                        ? this.props.nullImg
                                         : this.props.screenshot
                                 }
                             />
@@ -134,7 +144,7 @@ class PageResultItem extends PureComponent {
                                     />
                                     <button
                                         disabled={this.props.isDeleting}
-                                        className={getBookmarkClass(this.props)}
+                                        className={this.bookmarkClass}
                                         onClick={
                                             this.props.onToggleBookmarkClick
                                         }
@@ -145,16 +155,9 @@ class PageResultItem extends PureComponent {
                     </a>
                     <div className={styles.crossRibbon}>
                         {this.props.isListFilterActive && (
-                            <SemiCircularRibbon title="Remove from this collection">
-                                <img
-                                    onClick={this.props.handleCrossRibbonClick}
-                                    src="/img/cross_grey.svg"
-                                    style={{
-                                        maxWidth: '100%',
-                                        maxHeight: '100%',
-                                    }}
-                                />
-                            </SemiCircularRibbon>
+                            <SemiCircularRibbon
+                                onClick={this.props.handleCrossRibbonClick}
+                            />
                         )}
                     </div>
                 </div>

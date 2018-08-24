@@ -1,0 +1,26 @@
+.resultMessage {
+    text-align: center;
+    margin-top: 80px;
+    font-size: 20px;
+    font-family: 'Open Sans';
+    color: grey;
+    animation-name: fadeIn;
+    animation-duration: 0.4s;
+    animation-iteration-count: 1;
+    animation-timing-function: ease-in;
+    font-weight: 200;
+}
+
+.smallMessage {
+    position: relative;
+    left: -272px;
+    top: -13px;
+    margin: 0;
+    color: #4abf9d;
+    font-size: 15px;
+    font-style: normal;
+
+    & + ul {
+        margin-top: -30px;
+    }
+}
